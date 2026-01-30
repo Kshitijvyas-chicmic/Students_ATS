@@ -1,0 +1,4 @@
+fitz
+fastapi
+uvicorn
+OpenAI
