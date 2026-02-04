@@ -1,4 +1,3 @@
-fitz
-fastapi
-uvicorn
-OpenAI
+fastapi==0.128.0
+fitz==0.0.1.dev2
+Requests==2.32.5
