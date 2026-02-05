@@ -58,6 +58,7 @@ header {
     font-weight: 800;
     background: linear-gradient(to right, #fff, var(--primary));
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-bottom: 10px;
     text-shadow: 0 0 30px var(--primary-glow);
@@ -161,9 +162,36 @@ main {
     cursor: pointer;
     transition: 0.3s;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
+    gap: 8px;
+    min-height: 80px;
+}
+
+.loader-wrap {
+    display: flex;
+    align-items: center;
     gap: 10px;
+}
+
+.status-msg {
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.8);
+    animation: pulseText 2s infinite;
+}
+
+@keyframes pulseText {
+
+    0%,
+    100% {
+        opacity: 0.6;
+    }
+
+    50% {
+        opacity: 1;
+    }
 }
 
 .btn-primary:hover {

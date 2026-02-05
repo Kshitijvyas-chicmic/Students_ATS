@@ -19,9 +19,8 @@ def safe_json_parse(text: str):
 
 def analyze_resume_with_llm(resume_text: str, target_role: str):
 
-    # Truncate to 12,000 chars to ensure we read the entire resume (Experience/Projects are often at the end)
-    # Llama 3.2 can handle this context easily.
-    truncated_resume = resume_text[:12000]
+    # Optimized to 6,000 chars (approx 2-3 pages) for much faster CPU processing
+    truncated_resume = resume_text[:6000]
 
     prompt = f"""
     You are a Professional ATS (Applicant Tracking System) Engine.
@@ -43,7 +42,11 @@ def analyze_resume_with_llm(resume_text: str, target_role: str):
        - 80-95: Strong match (Candidate has core skills like {target_role}).
        - 40-79: Average match (Some skills match, but not the primary stack).
        - 0-39: Poor match (Ecosystem mismatch or irrelevant resume).
-    5. **MISSING SKILLS**: List critical skills for "{target_role}" that are NOT present in the resume.
+    5. **MISSING SKILLS**: 
+       - Identify the **TOP 5 most critical** technical skills for "{target_role}".
+       - **MANDATORY**: Only list a skill if it is absolutely necessary for the role AND **completely missing** from the resume.
+       - **STRICT CHECK**: Scan the entire resume again. If the skill (or a similar version of it) is mentioned anywhere, DO NOT list it as missing.
+       - **DOMAIN LOCK**: Do not suggest skills from outside the "{target_role}" domain. (No cross-domain suggestions like suggesting Dev tools for Sales roles).
 
     ### STRICT JSON FORMAT:
     {{
@@ -62,7 +65,7 @@ def analyze_resume_with_llm(resume_text: str, target_role: str):
         "format": "json",
         "stream": False,
         "options": {
-            "temperature": 0.1
+            "temperature": 0.0
         }
     }
 

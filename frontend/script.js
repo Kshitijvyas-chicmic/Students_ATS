@@ -65,6 +65,30 @@ document.addEventListener('DOMContentLoaded', () => {
         btnText.style.opacity = '0.5';
         resultSection.hidden = true;
 
+        // Status Messaging Logic
+        const statusContainer = document.getElementById('statusContainer');
+        const statusText = document.getElementById('statusText');
+        statusContainer.hidden = false;
+
+        const messages = [
+            "Parsing your resume...",
+            "Analyzing your experience...",
+            "Extracting your skills...",
+            "Comparing against target role...",
+            "Identifying skill gaps...",
+            "Generating recommendations...",
+            "Finalizing your ATS score...",
+            "Polishing the results..."
+        ];
+
+        let msgIndex = 0;
+        statusText.textContent = messages[0];
+
+        const statusInterval = setInterval(() => {
+            msgIndex = (msgIndex + 1) % messages.length;
+            statusText.textContent = messages[msgIndex];
+        }, 5000); // Change message every 5 seconds
+
         const formData = new FormData();
         formData.append('resume', file);
         formData.append('target_role', targetRole);
@@ -83,8 +107,10 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error(error);
             alert('Error analyzing resume. Make sure backend and Ollama are running.');
         } finally {
+            clearInterval(statusInterval);
             submitBtn.disabled = false;
             loader.hidden = true;
+            statusContainer.hidden = true;
             btnText.style.opacity = '1';
         }
     });
