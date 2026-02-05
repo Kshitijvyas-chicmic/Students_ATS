@@ -66,10 +66,11 @@ def analyze_resume_with_llm(resume_text: str, target_role: str):
         }
     }
 
-    print(f"Sending prompt to LLM (Model: {payload['model']})... This may take 2-5 minutes on CPU.")
+    print(f"--- Sending Prompt to Ollama ({payload['model']}) ---")
     try:
-        # CPU inference can be slow. High timeout prevents "Read timed out".
+        # High timeout for CPU
         response = requests.post(OLLAMA_URL, json=payload, timeout=600)
+        print("--- Received Response from Ollama ---")
         raw = response.json().get("response", "")
     except requests.exceptions.ConnectionError:
         print("!! OLLAMA CONNECTION FAILED - RETURNING MOCK DATA !!")

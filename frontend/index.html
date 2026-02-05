@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Resume Analyzer | Advanced ATS</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="glass-bg"></div>
+    <div class="container">
+        <header>
+            <h1 class="glow-text">AI Resume Analyzer</h1>
+            <p class="subtitle">Optimize your career path with precision LLM analysis</p>
+        </header>
+
+        <main>
+            <div class="card upload-card">
+                <form id="analyzeForm">
+                    <div class="input-group">
+                        <label for="targetRole">Target Job Role</label>
+                        <input type="text" id="targetRole" placeholder="e.g. Senior Java Developer" required>
+                    </div>
+
+                    <div class="file-upload" id="dropZone">
+                        <input type="file" id="resumeFile" accept=".pdf" hidden>
+                        <div class="upload-content">
+                            <div class="icon">📄</div>
+                            <p id="fileNameDisplay">Drag & drop your PDF or <span class="browse">browse</span></p>
+                            <span class="file-hint">Only PDF format supported (max 5MB)</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="btn-primary">
+                        <span class="btn-text">Analyze Resume</span>
+                        <div class="loader" hidden></div>
+                    </button>
+                </form>
+            </div>
+
+            <div id="resultSection" class="result-container" hidden>
+                <div class="result-header">
+                    <div class="score-circular">
+                        <svg viewBox="0 0 36 36" class="circular-chart">
+                            <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <path class="circle" id="scoreCircle" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <text x="18" y="20.35" class="percentage" id="scoreText">0%</text>
+                        </svg>
+                        <span class="label">ATS Score</span>
+                    </div>
+                    <div class="summary-pills">
+                        <div class="pill">
+                            <span class="pill-label">Experience</span>
+                            <span class="pill-value" id="expValue">Fresher</span>
+                        </div>
+                        <div class="pill">
+                            <span class="pill-label">Role Fit</span>
+                            <span class="pill-value" id="fitValue">Good</span>
+                        </div>
+                        <div class="pill">
+                            <span class="pill-label">Projects</span>
+                            <span class="pill-value" id="projValue">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="details-grid">
+                    <div class="detail-card">
+                        <h3><span class="icon">✨</span> Identified Skills</h3>
+                        <div class="skills-wrap" id="skillsList">
+                        </div>
+                    </div>
+                    <div class="detail-card">
+                        <h3><span class="icon">🎯</span> Missing Skills</h3>
+                        <div class="skills-wrap missing" id="missingSkillsList">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2024 Advanced Student ATS. Powered by Local LLM.</p>
+        </footer>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

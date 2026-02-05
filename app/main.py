@@ -1,11 +1,15 @@
 from fastapi import FastAPI
-from app.resume_parser import extract_text_from_pdf
-from app.llm_engine import analyze_resume_with_llm
+from fastapi.middleware.cors import CORSMiddleware
+from app.routers.resumeRouter import router as resumeRouter
 
 app = FastAPI()
 
-@app.post("/analyze")
-def analyze_resume(path: str, target_role: str):
-    text = extract_text_from_pdf(path)
-    result = analyze_resume_with_llm(text, target_role)
-    return result
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(resumeRouter)

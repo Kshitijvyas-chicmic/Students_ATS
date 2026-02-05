@@ -1,0 +1,135 @@
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('analyzeForm');
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('resumeFile');
+    const fileNameDisplay = document.getElementById('fileNameDisplay');
+    const submitBtn = document.getElementById('submitBtn');
+    const loader = submitBtn.querySelector('.loader');
+    const btnText = submitBtn.querySelector('.btn-text');
+
+    const resultSection = document.getElementById('resultSection');
+    const scoreCircle = document.getElementById('scoreCircle');
+    const scoreText = document.getElementById('scoreText');
+    const skillsList = document.getElementById('skillsList');
+    const missingSkillsList = document.getElementById('missingSkillsList');
+    const expValue = document.getElementById('expValue');
+    const fitValue = document.getElementById('fitValue');
+    const projValue = document.getElementById('projValue');
+
+    // Drag and drop logic
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+    });
+
+    ['dragleave', 'drop'].forEach(event => {
+        dropZone.addEventListener(event, () => dropZone.classList.remove('dragover'));
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const files = e.dataTransfer.files;
+        if (files.length) {
+            fileInput.files = files;
+            updateFileName(files[0].name);
+        }
+    });
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length) {
+            updateFileName(fileInput.files[0].name);
+        }
+    });
+
+    function updateFileName(name) {
+        fileNameDisplay.innerHTML = `Selected: <span class="browse">${name}</span>`;
+    }
+
+    // Form Submission
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const file = fileInput.files[0];
+        const targetRole = document.getElementById('targetRole').value;
+
+        if (!file) {
+            alert('Please select a resume (PDF)');
+            return;
+        }
+
+        // UI Loading State
+        submitBtn.disabled = true;
+        loader.hidden = false;
+        btnText.style.opacity = '0.5';
+        resultSection.hidden = true;
+
+        const formData = new FormData();
+        formData.append('resume', file);
+        formData.append('target_role', targetRole);
+
+        try {
+            const response = await fetch('http://127.0.0.1:8000/api/resume/analyze', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) throw new Error('Server error');
+
+            const data = await response.json();
+            displayResults(data);
+        } catch (error) {
+            console.error(error);
+            alert('Error analyzing resume. Make sure backend and Ollama are running.');
+        } finally {
+            submitBtn.disabled = false;
+            loader.hidden = true;
+            btnText.style.opacity = '1';
+        }
+    });
+
+    function displayResults(data) {
+        resultSection.hidden = false;
+
+        // Update Score
+        const score = data.score || 0;
+        scoreText.textContent = `${score}%`;
+        const dashArray = `${score}, 100`;
+        scoreCircle.setAttribute('stroke-dasharray', dashArray);
+
+        // Update Summary
+        expValue.textContent = data.experience_level || 'N/A';
+        fitValue.textContent = data.role_fit || 'N/A';
+        projValue.textContent = data.projects || '0';
+
+        // Update Skills
+        skillsList.innerHTML = '';
+        if (data.skills && data.skills.length) {
+            data.skills.forEach(skill => {
+                const tag = document.createElement('span');
+                tag.className = 'skill-tag';
+                tag.textContent = skill;
+                skillsList.appendChild(tag);
+            });
+        } else {
+            skillsList.innerHTML = '<p class="file-hint">No technical skills detected</p>';
+        }
+
+        // Update Missing Skills
+        missingSkillsList.innerHTML = '';
+        if (data.missing_skills && data.missing_skills.length) {
+            data.missing_skills.forEach(skill => {
+                const tag = document.createElement('span');
+                tag.className = 'skill-tag missing';
+                tag.textContent = skill;
+                missingSkillsList.appendChild(tag);
+            });
+        } else {
+            missingSkillsList.innerHTML = '<p class="file-hint">No missing skills detected!</p>';
+        }
+
+        // Scroll to results
+        resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+});
