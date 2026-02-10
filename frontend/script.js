@@ -157,14 +157,6 @@ document.addEventListener('DOMContentLoaded', () => {
             missingSkillsList.innerHTML = '<p class="file-hint">No missing skills detected!</p>';
         }
 
-        // Update Recommendation
-        try {
-            const recommendationText = document.getElementById('recommendationText');
-            if (recommendationText) {
-                recommendationText.textContent = data.recommendation || 'No recommendation available.';
-                recommendationText.classList.remove('file-hint');
-            }
-        } catch (e) { console.error("Error updating recommendation:", e); }
 
         // Update Job Links
         try {
