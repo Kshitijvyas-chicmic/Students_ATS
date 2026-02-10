@@ -295,6 +295,10 @@ main {
     gap: 24px;
 }
 
+.detail-card.full-width {
+    grid-column: 1 / -1;
+}
+
 .detail-card {
     background: var(--card-bg);
     padding: 24px;
@@ -326,6 +330,20 @@ main {
     border-radius: 8px;
     font-size: 0.9rem;
     border: 1px solid rgba(99, 102, 241, 0.2);
+    animation: skillTagFadeIn 0.5s ease forwards;
+    opacity: 0;
+}
+
+@keyframes skillTagFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .skill-tag.missing {
@@ -355,6 +373,70 @@ footer {
     color: var(--text-dim);
     font-size: 0.9rem;
     padding-bottom: 30px;
+}
+
+/* Job Links Styles */
+.job-links-container {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.job-link-btn {
+    flex: 1;
+    min-width: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 18px;
+    border-radius: 16px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.job-link-btn:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.job-link-btn.linkedin {
+    background: linear-gradient(135deg, rgba(0, 119, 181, 0.15), rgba(0, 119, 181, 0.05));
+    border-color: rgba(0, 119, 181, 0.3);
+}
+
+.job-link-btn.linkedin:hover {
+    background: linear-gradient(135deg, rgba(0, 119, 181, 0.3), rgba(0, 119, 181, 0.1));
+    box-shadow: 0 10px 30px rgba(0, 119, 181, 0.2);
+}
+
+.job-link-btn.indeed {
+    background: linear-gradient(135deg, rgba(37, 87, 167, 0.15), rgba(37, 87, 167, 0.05));
+    border-color: rgba(37, 87, 167, 0.3);
+}
+
+.job-link-btn.indeed:hover {
+    background: linear-gradient(135deg, rgba(37, 87, 167, 0.3), rgba(37, 87, 167, 0.1));
+    box-shadow: 0 10px 30px rgba(37, 87, 167, 0.2);
+}
+
+.job-link-btn.naukri {
+    background: linear-gradient(135deg, rgba(255, 117, 0, 0.15), rgba(255, 117, 0, 0.05));
+    border-color: rgba(255, 117, 0, 0.3);
+}
+
+.job-link-btn.naukri:hover {
+    background: linear-gradient(135deg, rgba(255, 117, 0, 0.3), rgba(255, 117, 0, 0.1));
+    box-shadow: 0 10px 30px rgba(255, 117, 0, 0.2);
+}
+
+.job-link-btn .btn-icon {
+    font-size: 1.4rem;
 }
 
 @media (max-width: 768px) {
