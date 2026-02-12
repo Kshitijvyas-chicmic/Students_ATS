@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Form Submission
     form.addEventListener('submit', async (e) => {
+        console.log("Submit button clicked!");
         e.preventDefault();
 
         const file = fileInput.files[0];
@@ -71,14 +72,14 @@ document.addEventListener('DOMContentLoaded', () => {
         statusContainer.hidden = false;
 
         const messages = [
-            "Parsing your resume...",
-            "Analyzing your experience...",
-            "Extracting your skills...",
-            "Comparing against target role...",
-            "Identifying skill gaps...",
-            "Generating recommendations...",
-            "Finalizing your ATS score...",
-            "Polishing the results..."
+            `Parsing your resume for ${targetRole}...`,
+            `Analyzing experience against ${targetRole} standards...`,
+            "Extracting specific technical skills...",
+            `Evaluating role fit for ${targetRole}...`,
+            "Identifying critical skill gaps...",
+            "Calculating precise ATS score...",
+            "Generating direct job links...",
+            "Finalizing your report..."
         ];
 
         let msgIndex = 0;
