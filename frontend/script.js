@@ -15,6 +15,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const expValue = document.getElementById('expValue');
     const fitValue = document.getElementById('fitValue');
     const projValue = document.getElementById('projValue');
+    const targetRoleInput = document.getElementById('targetRole');
+    const interimJobs = document.getElementById('interimJobs');
+    const interimJobLinksList = document.getElementById('interimJobLinks');
+
+    function populateJobLinks(container, role) {
+        const roleQuery = encodeURIComponent(role);
+        const links = [
+            { id: 'linkedin', name: 'LinkedIn', icon: '🔗', url: `https://www.linkedin.com/jobs/search/?keywords=${roleQuery}&f_TPR=r3600`, class: 'linkedin' },
+            { id: 'indeed', name: 'Indeed', icon: '🔍', url: `https://www.indeed.com/jobs?q=${roleQuery}&fromage=1`, class: 'indeed' },
+            { id: 'naukri', name: 'Naukri', icon: '💼', url: `https://www.naukri.com/${role.replace(/\s+/g, '-')}-jobs?freshness=1`, class: 'naukri' }
+        ];
+
+        container.innerHTML = '';
+        links.forEach(link => {
+            const a = document.createElement('a');
+            a.href = link.url;
+            a.target = '_blank';
+            a.className = `job-link-btn ${link.class}`;
+            a.innerHTML = `
+                <span class="btn-icon">${link.icon}</span>
+                <span class="btn-name">${link.name} Jobs</span>
+            `;
+            container.appendChild(a);
+        });
+    }
 
     // Drag and drop logic
     dropZone.addEventListener('click', () => fileInput.click());
@@ -65,6 +90,11 @@ document.addEventListener('DOMContentLoaded', () => {
         loader.hidden = false;
         btnText.style.opacity = '0.5';
         resultSection.hidden = true;
+
+        // Show Instant Jobs immediately after submit
+        interimJobs.hidden = false;
+        populateJobLinks(interimJobLinksList, targetRole);
+        interimJobs.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
         // Status Messaging Logic
         const statusContainer = document.getElementById('statusContainer');
@@ -117,6 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function displayResults(data) {
+        interimJobs.hidden = true;
         resultSection.hidden = false;
 
         // Update Score
@@ -165,27 +196,44 @@ document.addEventListener('DOMContentLoaded', () => {
             const jobLinksList = document.getElementById('jobLinksList');
             if (jobLinksList) {
                 jobLinksList.innerHTML = '';
-                if (data.job_links) {
-                    const links = [
-                        { id: 'linkedin', name: 'LinkedIn', icon: '🔗', url: data.job_links.linkedin_24h, class: 'linkedin' },
-                        { id: 'indeed', name: 'Indeed', icon: '🔍', url: data.job_links.indeed_24h, class: 'indeed' },
-                        { id: 'naukri', name: 'Naukri', icon: '💼', url: data.job_links.naukri, class: 'naukri' }
-                    ];
 
-                    links.forEach(link => {
-                        const a = document.createElement('a');
-                        a.href = link.url;
-                        a.target = '_blank';
-                        a.className = `job-link-btn ${link.class}`;
-                        a.innerHTML = `
-                            <span class="btn-icon">${link.icon}</span>
-                            <span class="btn-name">${link.name} Jobs</span>
-                        `;
-                        jobLinksList.appendChild(a);
-                    });
-                } else {
-                    jobLinksList.innerHTML = '<p class="file-hint">No job links generated. Check backend.</p>';
-                }
+                const targetRole = targetRoleInput.value;
+                const roleQuery = encodeURIComponent(targetRole);
+                const links = [
+                    {
+                        id: 'linkedin',
+                        name: 'LinkedIn',
+                        icon: '🔗',
+                        url: data.job_links?.linkedin_24h || `https://www.linkedin.com/jobs/search/?keywords=${roleQuery}&f_TPR=r3600`,
+                        class: 'linkedin'
+                    },
+                    {
+                        id: 'indeed',
+                        name: 'Indeed',
+                        icon: '🔍',
+                        url: data.job_links?.indeed_24h || `https://www.indeed.com/jobs?q=${roleQuery}&fromage=1`,
+                        class: 'indeed'
+                    },
+                    {
+                        id: 'naukri',
+                        name: 'Naukri',
+                        icon: '💼',
+                        url: data.job_links?.naukri || `https://www.naukri.com/${targetRole.replace(/\s+/g, '-')}-jobs?freshness=1`,
+                        class: 'naukri'
+                    }
+                ];
+
+                links.forEach(link => {
+                    const a = document.createElement('a');
+                    a.href = link.url;
+                    a.target = '_blank';
+                    a.className = `job-link-btn ${link.class}`;
+                    a.innerHTML = `
+                        <span class="btn-icon">${link.icon}</span>
+                        <span class="btn-name">${link.name} Jobs</span>
+                    `;
+                    jobLinksList.appendChild(a);
+                });
             } else {
                 console.error("Could not find jobLinksList element!");
             }

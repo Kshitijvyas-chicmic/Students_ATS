@@ -113,6 +113,33 @@ main {
     box-shadow: 0 0 15px var(--primary-glow);
 }
 
+.interim-jobs-card {
+    margin-top: 10px;
+    border: 1px solid var(--primary-glow);
+    animation: slideInFromRight 0.5s ease-out;
+}
+
+@keyframes slideInFromRight {
+    from {
+        opacity: 0;
+        transform: translateX(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.interim-jobs-card h3 {
+    color: var(--primary);
+    margin-bottom: 12px;
+}
+
+.interim-jobs-card .file-hint {
+    margin-bottom: 20px;
+}
+
 .file-upload {
     border: 2px dashed var(--border);
     border-radius: 16px;
@@ -385,16 +412,16 @@ footer {
 
 .job-link-btn {
     flex: 1;
-    min-width: 220px;
+    min-width: 200px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 12px;
-    padding: 18px;
+    padding: 16px;
     border-radius: 16px;
     text-decoration: none;
     font-weight: 600;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: white;
     background: rgba(255, 255, 255, 0.03);
