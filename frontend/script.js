@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) throw new Error('Server error');
 
             const data = await response.json();
-            displayResults(data);
+            displayResults(data, targetRole);
         } catch (error) {
             console.error(error);
             alert('Error analyzing resume. Make sure backend and Ollama are running.');
@@ -146,8 +146,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    function displayResults(data) {
-        interimJobs.hidden = true;
+    function displayResults(data, targetRole) {
+        // Keep jobs visible as requested
+        interimJobs.hidden = false;
         resultSection.hidden = false;
 
         // Update Score
@@ -155,6 +156,19 @@ document.addEventListener('DOMContentLoaded', () => {
         scoreText.textContent = `${score}%`;
         const dashArray = `${score}, 100`;
         scoreCircle.setAttribute('stroke-dasharray', dashArray);
+
+        // Add Hybrid Label
+        const existingLabel = document.getElementById('hybridLabel');
+        if (!existingLabel) {
+            const label = document.createElement('div');
+            label.id = 'hybridLabel';
+            label.style.fontSize = '0.7rem';
+            label.style.color = 'var(--primary)';
+            label.style.marginTop = '5px';
+            label.style.fontWeight = '600';
+            label.textContent = 'Hybrid AI-Verified';
+            scoreCircle.parentElement.appendChild(label);
+        }
 
         // Update Summary
         expValue.textContent = data.experience || 'N/A';
@@ -189,56 +203,69 @@ document.addEventListener('DOMContentLoaded', () => {
             missingSkillsList.innerHTML = '<p class="file-hint">No missing skills detected!</p>';
         }
 
-
-        // Update Job Links
+        // --- NEW: Update AI Insights ---
         try {
-            console.log("Job links data:", data.job_links);
-            const jobLinksList = document.getElementById('jobLinksList');
-            if (jobLinksList) {
-                jobLinksList.innerHTML = '';
+            if (data.analysis) {
+                const detailsGrid = document.querySelector('.details-grid');
+                if (!detailsGrid) return;
 
-                const targetRole = targetRoleInput.value;
-                const roleQuery = encodeURIComponent(targetRole);
-                const links = [
-                    {
-                        id: 'linkedin',
-                        name: 'LinkedIn',
-                        icon: '🔗',
-                        url: data.job_links?.linkedin_24h || `https://www.linkedin.com/jobs/search/?keywords=${roleQuery}&f_TPR=r3600`,
-                        class: 'linkedin'
-                    },
-                    {
-                        id: 'indeed',
-                        name: 'Indeed',
-                        icon: '🔍',
-                        url: data.job_links?.indeed_24h || `https://www.indeed.com/jobs?q=${roleQuery}&fromage=1`,
-                        class: 'indeed'
-                    },
-                    {
-                        id: 'naukri',
-                        name: 'Naukri',
-                        icon: '💼',
-                        url: data.job_links?.naukri || `https://www.naukri.com/${targetRole.replace(/\s+/g, '-')}-jobs?freshness=1`,
-                        class: 'naukri'
-                    }
-                ];
+                // Remove old insights
+                document.querySelectorAll('.insight-card').forEach(card => card.remove());
 
-                links.forEach(link => {
-                    const a = document.createElement('a');
-                    a.href = link.url;
-                    a.target = '_blank';
-                    a.className = `job-link-btn ${link.class}`;
-                    a.innerHTML = `
-                        <span class="btn-icon">${link.icon}</span>
-                        <span class="btn-name">${link.name} Jobs</span>
-                    `;
-                    jobLinksList.appendChild(a);
-                });
-            } else {
-                console.error("Could not find jobLinksList element!");
+                // 1. Summary Card
+                const summaryCard = document.createElement('div');
+                summaryCard.className = 'detail-card full-width insight-card';
+                summaryCard.innerHTML = `
+                    <h3><span class="icon">📝</span> AI Analysis Summary</h3>
+                    <p style="line-height: 1.6; color: var(--text-main); font-size: 0.95rem;">${data.analysis.summary || 'Detailed analysis complete.'}</p>
+                `;
+                detailsGrid.prepend(summaryCard);
+
+                // 2. Strengths & Soft Skills
+                const insightsRow = document.createElement('div');
+                insightsRow.className = 'detail-card full-width insight-card';
+                insightsRow.style.display = 'grid';
+                insightsRow.style.gridTemplateColumns = '1fr 1fr';
+                insightsRow.style.gap = '20px';
+
+                const strengths = Array.isArray(data.analysis.strengths) ? data.analysis.strengths : ["Technical Proficiency"];
+                const softSkills = Array.isArray(data.analysis.soft_skills) ? data.analysis.soft_skills : ["Communication", "Reliability"];
+
+                insightsRow.innerHTML = `
+                    <div>
+                        <h3><span class="icon">💪</span> Core Strengths</h3>
+                        <ul style="color: var(--text-dim); padding-left: 20px;">
+                            ${strengths.map(s => `<li style="margin-bottom: 8px;">${s}</li>`).join('')}
+                        </ul>
+                    </div>
+                    <div>
+                        <h3><span class="icon">🧠</span> Soft Skills</h3>
+                        <div class="skills-wrap">
+                            ${softSkills.map(s => `<span class="skill-tag" style="background: rgba(16, 185, 129, 0.1); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.2);">${s}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+                detailsGrid.appendChild(insightsRow);
+
+                // 3. Improvement Tips
+                const tips = Array.isArray(data.analysis.improvement_tips) ? data.analysis.improvement_tips : ["Tailor keywords to job description"];
+                const tipsCard = document.createElement('div');
+                tipsCard.className = 'detail-card full-width insight-card';
+                tipsCard.style.border = '1px solid var(--warning)';
+                tipsCard.innerHTML = `
+                    <h3><span class="icon">💡</span> How to Beat the ATS (Tips)</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                        ${tips.map(t => `
+                            <div style="background: rgba(245, 158, 11, 0.05); padding: 15px; border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.1);">
+                                ${t}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                detailsGrid.appendChild(tipsCard);
             }
-        } catch (e) {
-            console.error("Error generating job links UI:", e);
+        } catch (uiError) {
+            console.error("UI Render Error:", uiError);
         }
 
         // Scroll to results

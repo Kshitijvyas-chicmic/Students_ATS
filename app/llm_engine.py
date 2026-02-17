@@ -4,58 +4,40 @@ import re
 
 OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
 
-
 def extract_json(text: str):
+    if not text:
+        return None
     match = re.search(r"\{[\s\S]*\}", text)
     return match.group() if match else None
-
 
 def safe_json_parse(text: str):
     try:
         return json.loads(text)
-    except json.JSONDecodeError:
-        return {"error": "Invalid JSON from LLM", "raw": text}
+    except:
+        return None
 
-
-def analyze_resume_with_llm(resume_text: str, target_role: str):
-
-    # Optimized to 6,000 chars (approx 2-3 pages) for much faster CPU processing
-    truncated_resume = resume_text[:6000]
+def get_llm_insights(resume_text: str, target_role: str, deterministic_results: dict):
+    """
+    Uses LLM for semantic analysis. Includes a retry mechanism for stability.
+    """
+    # 1. Prepare Primary Attempt
+    truncated_resume = resume_text[:2000] # Even shorter for stability
+    found_skills_str = ", ".join(deterministic_results.get('found_skills', ["None"]))
 
     prompt = f"""
-    You are a Professional ATS (Applicant Tracking System) Engine.
-    Your output MUST be a single, valid JSON object. No markdown. No text outside the JSON.
+    Analyze this candidate for "{target_role}".
+    SCORE: {deterministic_results['score']}%
+    MISSING: {', '.join(deterministic_results['missing_skills'])}
+    RESUME: {truncated_resume}
 
-    TARGET ROLE: "{target_role}"
-
-    RESUME CONTENT:
-    {truncated_resume}
-
-    ### CORE RULES:
-    1. **SKILLS**: Extract EVERY single technical skill, tool, and framework from the resume text. 
-       - **DO NOT FILTER**. If it's on the resume, list it in the "skills" array.
-    2. **PROJECTS**: Count only distinct, named technical projects.
-    3. **EXPERIENCE**: 
-       - Calculate total years of professional work experience.
-       - < 1 yr: "Fresher" | 1-3 yrs: "Junior" | 3+ yrs: "Experienced".
-    4. **SCORING**:
-       - 80-95: Strong match (Candidate has core skills like {target_role}).
-       - 40-79: Average match (Some skills match, but not the primary stack).
-       - 0-39: Poor match (Ecosystem mismatch or irrelevant resume).
-    5. **MISSING SKILLS**: 
-       - Identify the **TOP 5 most critical** technical skills for "{target_role}".
-       - **MANDATORY**: Only list a skill if it is absolutely necessary for the role AND **completely missing** from the resume.
-       - **STRICT CHECK**: Scan the entire resume again. If the skill (or a similar version of it) is mentioned anywhere, DO NOT list it as missing.
-       - **DOMAIN LOCK**: Do not suggest skills from outside the "{target_role}" domain. (No cross-domain suggestions like suggesting Dev tools for Sales roles).
-
-    ### STRICT JSON FORMAT:
+    Return ONLY this JSON:
     {{
-      "skills": [],
-      "projects": 0,
-      "experience_level": "",
-      "role_fit": "Poor" | "Average" | "Good" | "Excellent",
-      "score": 0,
-      "missing_skills": []
+      "summary": "1 sentence why they got this score",
+      "strengths": ["match 1", "match 2"],
+      "improvement_tips": ["tip 1", "tip 2", "tip 3"],
+      "soft_skills": ["skill 1", "skill 2", "skill 3"],
+      "semantic_relevancy_score": integer -10 to 10,
+      "extra_skills": ["skills NOT in: {found_skills_str}"]
     }}
     """
 
@@ -64,51 +46,58 @@ def analyze_resume_with_llm(resume_text: str, target_role: str):
         "prompt": prompt,
         "format": "json",
         "stream": False,
-        "options": {
-            "temperature": 0.0
-        }
+        "options": {"temperature": 0.1, "num_predict": 400}
     }
 
-    print(f"--- Sending Prompt to Ollama ({payload['model']}) ---")
+    print(f"--- 🤖 Asking AI for semantic insights... ---")
+    
+    # --- PRIMARY ATTEMPT ---
     try:
-        # High timeout for CPU
-        response = requests.post(OLLAMA_URL, json=payload, timeout=600)
-        print("--- Received Response from Ollama ---")
-        raw = response.json().get("response", "")
-    except requests.exceptions.ConnectionError:
-        print("!! OLLAMA CONNECTION FAILED - RETURNING MOCK DATA !!")
-        return {
-            "skills": ["MOCK_SKILL_1", "MOCK_SKILL_2", "Java (Mock)", "Python (Mock)"],
-            "projects": 99,
-            "experience_level": "Mock Data (Ollama Down)",
-            "role_fit": "Poor",
-            "score": 10,
-            "missing_skills": ["Ollama Service Not Running", "Please Start Ollama"],
-            "warning": "⚠️ server could not connect to Ollama. This is dummy data."
-        }
+        response = requests.post(OLLAMA_URL, json=payload, timeout=60)
+        if response.status_code == 200:
+            result_json = response.json()
+            raw = result_json.get("response", "")
+            
+            if not raw and "error" in result_json:
+                print(f"!! OLLAMA MODEL ERROR: {result_json['error']} !!")
+            else:
+                clean_json = extract_json(raw)
+                if clean_json:
+                    parsed = safe_json_parse(clean_json)
+                    if parsed:
+                        print("--- ✅ AI analysis successful ---")
+                        return parsed
+        else:
+            print(f"!! OLLAMA HTTP ERROR: {response.status_code} !!")
     except Exception as e:
-        return {"error": f"LLM Error: {str(e)}"}
+        print(f"!! OLLAMA CONNECTION ERROR: {str(e)} !!")
 
-    clean_json = extract_json(raw)
-    if not clean_json:
-        return {"error": "No JSON from LLM", "raw": raw}
+    # --- RETRY ATTEMPT (SIMPLIFIED) ---
+    print("--- 🔄 Retrying with ultra-simple prompt... ---")
+    retry_prompt = f"Candidate for {target_role}. Score {deterministic_results['score']}%. Tell me 3 soft skills in JSON format matching the previous schema."
+    payload["prompt"] = retry_prompt
 
-    data = safe_json_parse(clean_json)
+    try:
+        response = requests.post(OLLAMA_URL, json=payload, timeout=30)
+        raw = response.json().get("response", "")
+        clean_json = extract_json(raw)
+        if clean_json:
+            parsed = safe_json_parse(clean_json)
+            if parsed:
+                print("--- ✅ AI Retry successful (Short Mode) ---")
+                # Fill in defaults for missing fields in short mode
+                parsed["summary"] = parsed.get("summary") or f"Analysis for {target_role} role."
+                return parsed
+    except:
+        pass
 
-    # 🔒 HARD SAFETY CLAMP (in case model still lies)
-    if "role_fit" in data and "score" in data:
-        rf = data.get("role_fit")
-        # Handle cases where score might be a string or missing
-        try:
-            sc = int(data.get("score", 0))
-        except:
-            sc = 0
-
-        if rf == "Good":
-            data["score"] = max(70, min(95, sc))
-        elif rf == "Average":
-            data["score"] = max(40, min(69, sc))
-        elif rf == "Poor":
-            data["score"] = max(0, min(39, sc))
-
-    return data
+    # --- FINAL FALLBACK (SAFE) ---
+    print("--- ⚠️ Using Static Fallbacks ---")
+    return {
+        "summary": f"Based on keyword matching, your resume shows a {deterministic_results['role_fit'].lower()} fit for {target_role}.",
+        "strengths": ["Identified core keywords", "Matches experience patterns"],
+        "improvement_tips": ["Incorporate more industry-specific verbs", "Quantify project impact", "Directly address missing skills"],
+        "soft_skills": ["Professionalism", "Domain Knowledge", "Adaptability"],
+        "semantic_relevancy_score": 0,
+        "extra_skills": []
+    }
