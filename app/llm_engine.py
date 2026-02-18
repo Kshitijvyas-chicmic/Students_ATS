@@ -2,7 +2,9 @@ import requests
 import json
 import re
 
-OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
+# We will try the base URL first to see if it responds, then use /api/chat
+OLLAMA_BASE = "http://127.0.0.1:11434"
+OLLAMA_CHAT_URL = f"{OLLAMA_BASE}/api/chat"
 
 def extract_json(text: str):
     if not text:
@@ -18,10 +20,9 @@ def safe_json_parse(text: str):
 
 def get_llm_insights(resume_text: str, target_role: str, deterministic_results: dict):
     """
-    Uses LLM for semantic analysis. Includes a retry mechanism for stability.
+    Uses LLM Chat API for semantic analysis. 
     """
-    # 1. Prepare Primary Attempt
-    truncated_resume = resume_text[:2000] # Even shorter for stability
+    truncated_resume = resume_text[:2500]
     found_skills_str = ", ".join(deterministic_results.get('found_skills', ["None"]))
 
     prompt = f"""
@@ -41,63 +42,52 @@ def get_llm_insights(resume_text: str, target_role: str, deterministic_results: 
     }}
     """
 
+    # Using Chat API (more robust) and simpler model name (llama3.2)
     payload = {
-        "model": "llama3.2:3b",
-        "prompt": prompt,
+        "model": "llama3.2",
+        "messages": [{"role": "user", "content": prompt}],
         "format": "json",
         "stream": False,
-        "options": {"temperature": 0.1, "num_predict": 400}
+        "options": {"temperature": 0.1}
     }
 
-    print(f"--- 🤖 Asking AI for semantic insights... ---")
+    print(f"--- 🤖 Contacting Ollama at {OLLAMA_CHAT_URL} ---")
     
-    # --- PRIMARY ATTEMPT ---
     try:
-        response = requests.post(OLLAMA_URL, json=payload, timeout=60)
+        # Check if Ollama is even alive
+        requests.get(OLLAMA_BASE, timeout=2)
+        
+        response = requests.post(OLLAMA_CHAT_URL, json=payload, timeout=90)
+        
         if response.status_code == 200:
             result_json = response.json()
-            raw = result_json.get("response", "")
+            # Chat API returns content inside 'message' -> 'content'
+            raw = result_json.get("message", {}).get("content", "")
             
-            if not raw and "error" in result_json:
-                print(f"!! OLLAMA MODEL ERROR: {result_json['error']} !!")
-            else:
-                clean_json = extract_json(raw)
-                if clean_json:
-                    parsed = safe_json_parse(clean_json)
-                    if parsed:
-                        print("--- ✅ AI analysis successful ---")
-                        return parsed
+            clean_json = extract_json(raw)
+            if clean_json:
+                parsed = safe_json_parse(clean_json)
+                if parsed:
+                    print("--- ✅ AI Chat Analysis Successful ---")
+                    return parsed
+            print("!! ERROR: Model returned empty content or invalid JSON !!")
+            
+        elif response.status_code == 404:
+            print(f"!! OLLAMA ERROR 404: Endpoint or Model 'llama3.2' not found !!")
+            print("Action: Try running 'ollama pull llama3.2' in terminal.")
         else:
             print(f"!! OLLAMA HTTP ERROR: {response.status_code} !!")
+            print(f"DEBUG RESPONSE: {response.text[:200]}")
+
     except Exception as e:
-        print(f"!! OLLAMA CONNECTION ERROR: {str(e)} !!")
+        print(f"!! OLLAMA CONNECTION FAILED: {str(e)} !!")
 
-    # --- RETRY ATTEMPT (SIMPLIFIED) ---
-    print("--- 🔄 Retrying with ultra-simple prompt... ---")
-    retry_prompt = f"Candidate for {target_role}. Score {deterministic_results['score']}%. Tell me 3 soft skills in JSON format matching the previous schema."
-    payload["prompt"] = retry_prompt
-
-    try:
-        response = requests.post(OLLAMA_URL, json=payload, timeout=30)
-        raw = response.json().get("response", "")
-        clean_json = extract_json(raw)
-        if clean_json:
-            parsed = safe_json_parse(clean_json)
-            if parsed:
-                print("--- ✅ AI Retry successful (Short Mode) ---")
-                # Fill in defaults for missing fields in short mode
-                parsed["summary"] = parsed.get("summary") or f"Analysis for {target_role} role."
-                return parsed
-    except:
-        pass
-
-    # --- FINAL FALLBACK (SAFE) ---
     print("--- ⚠️ Using Static Fallbacks ---")
     return {
-        "summary": f"Based on keyword matching, your resume shows a {deterministic_results['role_fit'].lower()} fit for {target_role}.",
-        "strengths": ["Identified core keywords", "Matches experience patterns"],
-        "improvement_tips": ["Incorporate more industry-specific verbs", "Quantify project impact", "Directly address missing skills"],
-        "soft_skills": ["Professionalism", "Domain Knowledge", "Adaptability"],
+        "summary": f"Your resume has a {deterministic_results['role_fit'].lower()} alignment for {target_role}.",
+        "strengths": ["Matched key industry terms", "Experience level detected"],
+        "improvement_tips": ["Add more specific project results", "Ensure all 'Must-Have' skills are highlighted", "Use a more industry-standard format"],
+        "soft_skills": ["Communication", "Problem Solving", "Professionalism"],
         "semantic_relevancy_score": 0,
         "extra_skills": []
     }
