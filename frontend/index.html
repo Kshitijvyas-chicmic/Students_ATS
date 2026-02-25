@@ -25,7 +25,10 @@
                 <form id="analyzeForm">
                     <div class="input-group">
                         <label for="targetRole">Target Job Role</label>
-                        <input type="text" id="targetRole" placeholder="e.g. Senior Java Developer" required>
+                        <select id="targetRole" required>
+                            <option value="" disabled selected>Select a target role...</option>
+                            <!-- Options will be populated from API -->
+                        </select>
                     </div>
 
                     <div class="file-upload" id="dropZone">

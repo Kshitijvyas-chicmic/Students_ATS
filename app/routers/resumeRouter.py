@@ -2,8 +2,16 @@ from fastapi import APIRouter, UploadFile, File, Form
 from app.resume_parser import extract_text_from_pdf, parse_resume_features
 from app.scoring_engine import calculate_ats_score
 from app.llm_engine import get_llm_insights
+from app.core.skills_db import ROLE_REQUIREMENTS
 
 router = APIRouter(prefix='/api/resume', tags=['Resume'])
+
+@router.get("/roles")
+def get_roles():
+    """Get list of available target roles for the dropdown."""
+    # Return all keys except 'default'
+    roles = [role for role in ROLE_REQUIREMENTS.keys() if role != "default"]
+    return sorted(roles)
 
 @router.post("/analyze")
 def analyze_resume(resume: UploadFile = File(...), target_role: str = Form(...)):
@@ -13,11 +21,14 @@ def analyze_resume(resume: UploadFile = File(...), target_role: str = Form(...))
     file_bytes = resume.file.read()
     print("Reading PDF and extracting features...")
     text = extract_text_from_pdf(file_bytes)
+    print(text)
+    text = text[:4000]
     features = parse_resume_features(text)
-    print(f"Detected Skills: {len(features['skills'])}")
-    print(f"Detected Projects: {features['projects']}")
-    print(f"Detected Experience: {features['experience_years']} years")
-    
+    # type of the features is dict with keys: skills, projects, experience_years
+    print("Detected Skills:", features["skills"])
+    print("Detected Projects:", features["projects"])
+    print("Detected Experience:", features["experience_years"], "years")
+
     # 2. Scoring (Deterministic Logic)
     print("Calculating deterministic base score...")
     det_results = calculate_ats_score(features, target_role)
@@ -35,21 +46,21 @@ def analyze_resume(resume: UploadFile = File(...), target_role: str = Form(...))
     print(f"Semantic Bonus: {semantic_bonus} | Final Adjusted Score: {int(final_score)}%")
     
     # Merge skills (Static DB + LLM found extra)
-    all_skills = features["skills"] # Deterministic
+    from app.core.normalization import normalize_skills_list
+    all_skills = normalize_skills_list(features["skills"]) # Already normalized but for safety
     extra_skills = insights.get("extra_skills", [])
     if isinstance(extra_skills, list):
-        for s in extra_skills:
-            if s.lower() not in [x.lower() for x in all_skills]:
-                all_skills.append(s)
+        all_skills = normalize_skills_list(all_skills + extra_skills)
     
     # 4. Final Aggregation
     final_result = {
         "score": int(final_score),
         "role_fit": det_results["role_fit"],
         "experience": det_results["experience_level"],
-        "projects": features["projects"],
+        "projects": len(features.get("projects", [])),
         "skills": sorted(all_skills),
         "missing_skills": det_results["missing_skills"],
+        "score_breakdown": det_results["breakdown"], # Include the Quantity vs Quality split
         "analysis": insights,
         "job_links": {
             "linkedin_24h": f"https://www.linkedin.com/jobs/search/?keywords={target_role.replace(' ', '+')}&f_TPR=r3600",

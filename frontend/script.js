@@ -19,6 +19,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const interimJobs = document.getElementById('interimJobs');
     const interimJobLinksList = document.getElementById('interimJobLinks');
 
+    // Fetch and populate available roles
+    async function loadRoles() {
+        try {
+            const response = await fetch('http://127.0.0.1:8000/api/resume/roles');
+            if (response.ok) {
+                const roles = await response.json();
+                roles.forEach(role => {
+                    const option = document.createElement('option');
+                    option.value = role;
+                    option.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+                    targetRoleInput.appendChild(option);
+                });
+            }
+        } catch (error) {
+            console.error('Failed to load roles:', error);
+        }
+    }
+    loadRoles();
+
     function populateJobLinks(container, role) {
         const roleQuery = encodeURIComponent(role);
         const links = [
@@ -220,32 +239,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p style="line-height: 1.6; color: var(--text-main); font-size: 0.95rem;">${data.analysis.summary || 'Detailed analysis complete.'}</p>
                 `;
                 detailsGrid.prepend(summaryCard);
-
-                // 2. Strengths & Soft Skills
-                const insightsRow = document.createElement('div');
-                insightsRow.className = 'detail-card full-width insight-card';
-                insightsRow.style.display = 'grid';
-                insightsRow.style.gridTemplateColumns = '1fr 1fr';
-                insightsRow.style.gap = '20px';
-
-                const strengths = Array.isArray(data.analysis.strengths) ? data.analysis.strengths : ["Technical Proficiency"];
-                const softSkills = Array.isArray(data.analysis.soft_skills) ? data.analysis.soft_skills : ["Communication", "Reliability"];
-
-                insightsRow.innerHTML = `
-                    <div>
-                        <h3><span class="icon">💪</span> Core Strengths</h3>
-                        <ul style="color: var(--text-dim); padding-left: 20px;">
-                            ${strengths.map(s => `<li style="margin-bottom: 8px;">${s}</li>`).join('')}
-                        </ul>
-                    </div>
-                    <div>
-                        <h3><span class="icon">🧠</span> Soft Skills</h3>
-                        <div class="skills-wrap">
-                            ${softSkills.map(s => `<span class="skill-tag" style="background: rgba(16, 185, 129, 0.1); color: #6ee7b7; border-color: rgba(16, 185, 129, 0.2);">${s}</span>`).join('')}
-                        </div>
-                    </div>
-                `;
-                detailsGrid.appendChild(insightsRow);
 
                 // 3. Improvement Tips
                 const tips = Array.isArray(data.analysis.improvement_tips) ? data.analysis.improvement_tips : ["Tailor keywords to job description"];
