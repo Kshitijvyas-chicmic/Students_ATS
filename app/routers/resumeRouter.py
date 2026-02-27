@@ -3,15 +3,27 @@ from app.resume_parser import extract_text_from_pdf, parse_resume_features
 from app.scoring_engine import calculate_ats_score
 from app.llm_engine import get_llm_insights
 from app.core.skills_db import ROLE_REQUIREMENTS
+from app.service.quizService import QuizService
+
 
 router = APIRouter(prefix='/api/resume', tags=['Resume'])
 
+service = QuizService()
 @router.get("/roles")
 def get_roles():
     """Get list of available target roles for the dropdown."""
     # Return all keys except 'default'
     roles = [role for role in ROLE_REQUIREMENTS.keys() if role != "default"]
     return sorted(roles)
+
+@router.get("/generateQuiz")
+def generate_quiz(target_role: str):
+    """ Generate a quiz based on the target role requirements."""
+    return service.generate_quiz(target_role=target_role)
+
+@router.post("/submitQuiz")
+def submit_quiz(session_id: str, answers: list):
+    return service.submit_quiz(session_id=session_id, answers=answers)
 
 @router.post("/analyze")
 def analyze_resume(resume: UploadFile = File(...), target_role: str = Form(...)):
