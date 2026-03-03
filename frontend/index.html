@@ -31,6 +31,16 @@
                         </select>
                     </div>
 
+                    <div class="input-group">
+                        <label for="expLevel">Target Experience Level</label>
+                        <select id="expLevel" required>
+                            <option value="" disabled selected>Select your level...</option>
+                            <option value="Fresher">Fresher (0-1 yrs)</option>
+                            <option value="Junior">Junior (1-3 yrs)</option>
+                            <option value="Experienced">Experienced (3+ yrs)</option>
+                        </select>
+                    </div>
+
                     <div class="file-upload" id="dropZone">
                         <input type="file" id="resumeFile" accept=".pdf" hidden>
                         <div class="upload-content">
@@ -95,8 +105,10 @@
             </div>
 
             <div id="interimJobs" class="card interim-jobs-card" hidden>
-                <h3><span class="icon">🚀</span> Relevant Job Openings (Live Search)</h3>
-                <p class="file-hint">Explore these latest roles on LinkedIn, Indeed, and Naukri...</p>
+                <h3><span class="icon">🚀</span> AI Analysis in Progress...</h3>
+                <p class="file-hint" style="color: var(--primary); font-weight: 600;">The AI analysis takes a couple of
+                    minutes. While you wait, check the live job openings on LinkedIn, Indeed, and Naukri for your target
+                    role:</p>
                 <div id="interimJobLinks" class="job-links-container">
                     <!-- Links will be injected here on submit -->
                 </div>
@@ -104,7 +116,7 @@
         </main>
 
         <footer>
-            <p>&copy; 2024 Advanced Student ATS. Powered by Local LLM.</p>
+            <p>&copy; 2026 Advanced Student ATS. Powered by Local LLM.</p>
         </footer>
     </div>
     <script src="script.js?v=0210"></script>

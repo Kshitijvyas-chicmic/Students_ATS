@@ -98,6 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const file = fileInput.files[0];
         const targetRole = document.getElementById('targetRole').value;
+        const expLevel = document.getElementById('expLevel').value;
 
         if (!file) {
             alert('Please select a resume (PDF)');
@@ -121,14 +122,11 @@ document.addEventListener('DOMContentLoaded', () => {
         statusContainer.hidden = false;
 
         const messages = [
-            `Parsing your resume for ${targetRole}...`,
-            `Analyzing experience against ${targetRole} standards...`,
-            "Extracting specific technical skills...",
-            `Evaluating role fit for ${targetRole}...`,
-            "Identifying critical skill gaps...",
-            "Calculating precise ATS score...",
-            "Generating direct job links...",
-            "Finalizing your report..."
+            "AI Analysis is running! This will take a couple of minutes...",
+            "While you wait, check the live job openings below!",
+            "Searching LinkedIn, Indeed, and Naukri for active roles...",
+            "Processing your resume with deep LLM logic...",
+            "Almost there! Hang tight for your personalized report.",
         ];
 
         let msgIndex = 0;
@@ -142,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const formData = new FormData();
         formData.append('resume', file);
         formData.append('target_role', targetRole);
+        formData.append('exp_level', expLevel);
 
         try {
             const response = await fetch('http://127.0.0.1:8000/api/resume/analyze', {

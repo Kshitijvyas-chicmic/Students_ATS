@@ -2,7 +2,7 @@ from fastapi import APIRouter, UploadFile, File, Form
 from app.resume_parser import extract_text_from_pdf, parse_resume_features
 from app.scoring_engine import calculate_ats_score
 from app.llm_engine import get_llm_insights
-from app.core.skills_db import ROLE_REQUIREMENTS
+from app.core.level_skills_DB.fresher import ROLE_REQUIREMENTS
 from app.service.quizService import QuizService
 
 
@@ -26,15 +26,17 @@ def submit_quiz(session_id: str, answers: list):
     return service.submit_quiz(session_id=session_id, answers=answers)
 
 @router.post("/analyze")
-def analyze_resume(resume: UploadFile = File(...), target_role: str = Form(...)):
+def analyze_resume(resume: UploadFile = File(...), target_role: str = Form(...),exp_level: str = Form(...)):
     print(f"\n--- 🚀 Processing Request for Role: {target_role} ---")
     
     # 1. Extraction (Deterministic)
     file_bytes = resume.file.read()
     print("Reading PDF and extracting features...")
+
     text = extract_text_from_pdf(file_bytes)
     print(text)
     text = text[:4000]
+
     features = parse_resume_features(text)
     # type of the features is dict with keys: skills, projects, experience_years
     print("Detected Skills:", features["skills"])
@@ -43,7 +45,7 @@ def analyze_resume(resume: UploadFile = File(...), target_role: str = Form(...))
 
     # 2. Scoring (Deterministic Logic)
     print("Calculating deterministic base score...")
-    det_results = calculate_ats_score(features, target_role)
+    det_results = calculate_ats_score(features, target_role, exp_level)
     print(f"Base Score: {det_results['score']}% | Fit: {det_results['role_fit']}")
     
     # 3. Insights (LLM Semantic Layer) - This provides context that keywords miss

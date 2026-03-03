@@ -1,18 +1,23 @@
-from app.core.skills_db import ROLE_REQUIREMENTS
+from app.core.level_skills_DB.fresher import ROLE_REQUIREMENTS as FRESHER_REQUIREMENTS
+from app.core.level_skills_DB.exp import ROLE_REQUIREMENTS as EXP_REQUIREMENTS
+from app.core.level_skills_DB.junior import ROLE_REQUIREMENTS as JUNIOR_REQUIREMENTS
 from app.core.normalization import normalize_skill, normalize_skills_list
 
-def calculate_ats_score(features: dict, target_role: str):
+def calculate_ats_score(features: dict, target_role: str, exp_Level: str):
     """
-    Skills 60%, Project Tech 25%, Experience 15%.
+    Skills 70%, Project Tech 15%, Experience 15%.
     Returns ATS score along with breakdown.
     """
-    # Role lookup (exact match from dropdown)
-    requirements = ROLE_REQUIREMENTS.get(target_role)
-    
-    if not requirements:
-        # Emergency fallback to normalized version or default
-        requirements = ROLE_REQUIREMENTS.get(target_role.lower().strip(), 
-                                           ROLE_REQUIREMENTS.get("default", {"skills": {}, "min_exp": 1}))
+
+    # 1. Load Requirements based on experience level
+    requirements = None
+    if exp_Level == 'Fresher':
+        requirements = FRESHER_REQUIREMENTS.get(target_role)
+    elif exp_Level == 'Junior':
+        requirements = JUNIOR_REQUIREMENTS.get(target_role)
+    elif exp_Level == 'Experienced':
+        requirements = EXP_REQUIREMENTS.get(target_role)
+        
 
     # Normalize role skill keys
     role_skills = {normalize_skill(k): v for k, v in requirements.get("skills", {}).items()}
@@ -38,19 +43,19 @@ def calculate_ats_score(features: dict, target_role: str):
     actual_exp = features.get("experience_years", 0)
     target_exp = requirements.get("min_exp", 1)
 
-    # 1️⃣ Skills Section Score (60%)
+    # 1️⃣ Skills Section Score (70%)
     matched_points_skills = 0
     for skill, points in role_skills.items():
         if skill in resume_skills:
             matched_points_skills += points
-    skill_section_score = (matched_points_skills / total_skill_points) * 60
+    skill_section_score = (matched_points_skills / total_skill_points) * 70
 
-    # 2️⃣ Project Technology Score (25%)
+    # 2️⃣ Project Technology Score (15%)
     matched_points_projects = 0
     for skill, points in role_skills.items():
         if skill in project_skills:
             matched_points_projects += points
-    project_tech_score = (matched_points_projects / total_skill_points) * 25
+    project_tech_score = (matched_points_projects / total_skill_points) * 15
 
     # 3️⃣ Identify All Matched Skills (for UI display)
     # A skill is 'Matched' if it exists in either the Skills section OR Project technologies
@@ -58,7 +63,7 @@ def calculate_ats_score(features: dict, target_role: str):
     matched_skills_final = [skill for skill in role_skills.keys() if skill in found_anywhere]
 
     # 4️⃣ Experience Score (15%)
-    exp_ratio = min(actual_exp / target_exp, 1)
+    exp_ratio = min(actual_exp / target_exp, 1) if target_exp > 0 else 1.0
     exp_score = exp_ratio * 15
 
     # 5️⃣ Total Score (Apply Penalty)
@@ -66,13 +71,13 @@ def calculate_ats_score(features: dict, target_role: str):
     total_score = max(0, base_total - stuffing_penalty)
 
     # 6️⃣ Role Fit
-    if total_score >= 85:
-        role_fit = "Excellent"
-    elif total_score >= 70:
-        role_fit = "Strong Match"
-    elif total_score >= 50:
+    if total_score >= 75:
+        role_fit = "Strong match"
+    elif total_score >= 60:
+        role_fit = "Very Good"
+    elif total_score >= 45:
         role_fit = "Good"
-    elif total_score >= 30:
+    elif total_score >= 25:
         role_fit = "Average"
     else:
         role_fit = "Poor"
