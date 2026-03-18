@@ -27,6 +27,8 @@ SKILL_ALIASES = {
     "nodejs": "node.js",
     "vuejs": "vue.js",
     "angularjs": "angular",
+    "react.js": "react",
+    "node.js": "node.js",
 
     # Databases
     "postgres": "postgresql",
@@ -36,10 +38,13 @@ SKILL_ALIASES = {
 
     # Tools & Tech
     "git-github": "git/github",
+    "git": "git/github",
     "github": "git/github",
     "rest": "rest-api",
     "restful-api": "rest-api",
     "rest-apis": "rest-api",
+    "restapi": "rest-api",
+    "fastapi": "fast-api",
     "aws-cloud": "aws",
     "azure": "microsoft-azure",
     "gcp": "google-cloud-platform",

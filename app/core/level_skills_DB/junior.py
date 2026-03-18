@@ -13,49 +13,82 @@ ROLE_REQUIREMENTS = {
     "frontend developer": {
         "min_exp": 1,
         "skills": {
-            "javascript": 20, "react": 18,
-            "typescript": 15, "redux": 12,
-            "html": 10, "css": 10,
-            "webpack": 8, "git/github": 7
+            "javascript": 18,
+            "react": 18,
+            "typescript": 15,
+            "redux": 10,
+            "html": 12,
+            "css": 12,  
+            "webpack": 8,
+            "git/github": 7
         }
     },
 
     "fullstack developer": {
         "min_exp": 1,
         "skills": {
-            "react": 15, "spring-boot": 15,
-            "rest-api": 15, "postgresql": 10,
-            "docker": 10, "aws": 10,
-            "ci/cd": 10, "git/github": 5
+            "html": 8,
+            "css": 8,
+            "javascript": 10,
+            "typescript": 8,
+
+            "react": 15,
+
+            "node.js": 12,
+            "spring-boot": 10,
+            "rest-api": 10,
+
+            "postgresql": 8,
+            "mongodb": 6,
+
+            "git/github": 3,
+
+            "docker": 1,
+            "aws": 1
         }
     },
+
 
     "data scientist": {
         "min_exp": 1,
         "skills": {
-            "python": 20, "scikit-learn": 20,
-            "pandas": 15, "numpy": 15,
-            "sql": 10, "model-evaluation": 10,
-            "data-cleaning": 10
+            "python": 20,
+            "scikit-learn": 18,
+            "pandas": 15,
+            "numpy": 15,
+            "sql": 10,
+            "data-cleaning": 10,
+            "model-evaluation": 7,
+            "matplotlib": 5
         }
     },
 
     "python backend developer": {
         "min_exp": 1,
         "skills": {
-            "python": 20, "django": 18,
-            "fastapi": 15, "postgresql": 12,
-            "redis": 10, "celery": 10,
-            "docker": 8, "aws": 7
+            "python": 20,
+            "django": 18,
+            "fastapi": 15,
+            "rest-api": 12,
+            "postgresql": 10,
+            "redis": 8,
+            "celery": 7,
+            "docker": 5,
+            "aws": 3,
+            "git/github": 2
         }
     },
 
     "devops engineer": {
         "min_exp": 1,
         "skills": {
-            "aws": 20, "docker": 20,
-            "kubernetes": 15, "terraform": 15,
-            "ci/cd": 15, "monitoring": 15
+            "aws": 18,
+            "docker": 18,
+            "kubernetes": 15,
+            "terraform": 12,
+            "ci/cd": 15,
+            "monitoring": 12,
+            "linux": 10
         }
     },
 
@@ -114,17 +147,17 @@ ROLE_REQUIREMENTS = {
     },
 
     "backend developer": {
-        "min_exp": 1,
-        "skills": {
-            "rest-api": 20,
-            "postgresql": 15,
-            "mongodb": 10,
-            "redis": 10,
-            "docker": 10,
-            "aws": 10,
-            "ci/cd": 10,
-            "nodejs": 15
+    "min_exp": 1,
+    "skills": {
+        "node.js": 18,
+        "rest-api": 18,
+        "postgresql": 15,
+        "mongodb": 10,
+        "redis": 8,
+        "docker": 8,
+        "aws": 8,
+        "ci/cd": 7,
+        "git/github": 8
         }
     }
-
 }

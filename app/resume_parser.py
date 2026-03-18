@@ -75,11 +75,17 @@ Resume Text:
         parsed = json.loads(result)
 
         # Normalize skills
+        # Normalize skills
         parsed['skills'] = normalize_skills_list(parsed.get('skills', []))
 
-        # Normalize project technologies
+        # Normalize project technologies and merge into skills
+        project_skills = set()
         for proj in parsed.get('projects', []):
             proj['technologies'] = normalize_skills_list(proj.get('technologies', []))
+            project_skills.update(proj['technologies'])
+
+        # Merge project technologies into skills and remove duplicates
+        parsed['skills'] = normalize_skills_list(list(set(parsed['skills']).union(project_skills)))
 
         return parsed
 
