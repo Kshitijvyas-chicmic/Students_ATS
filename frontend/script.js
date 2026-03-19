@@ -325,7 +325,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (navLoginBtn) navLoginBtn.addEventListener('click', showLoginModal);
     
     if (navLogoutBtn) {
-        navLogoutBtn.addEventListener('click', () => {
+        navLogoutBtn.addEventListener('click', async () => {
+            try {
+                await fetch('http://127.0.0.1:8000/auth/logout', {
+                    method: 'POST'
+                });
+            } catch (e) {
+                console.error('Logout API error:', e);
+            }
             localStorage.removeItem('token');
             checkAuthState();
             alert('Successfully logged out.');
@@ -350,17 +357,40 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // -- FORM SUBMISSIONS (Connect these to your backend) --
+    // -- FORM SUBMISSIONS --
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            // TODO: Wire this to POST /login in your backend
-            // Example success behavior:
-            localStorage.setItem('token', 'simulated_dummy_jwt_token_for_now');
-            loginModal.style.display = 'none';
-            checkAuthState();
-            alert('Login successful! Check your browser localStorage for the token. (Remember to wire the API!)');
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            try {
+                const res = await fetch('http://127.0.0.1:8000/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userEmail_id: email,
+                        userPassword: password
+                    })
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json();
+                    alert(errData.detail || 'Login failed. Check your credentials.');
+                    return;
+                }
+
+                const data = await res.json();
+                localStorage.setItem('token', data.access_token);
+                loginModal.style.display = 'none';
+                loginForm.reset();
+                checkAuthState();
+                alert('Login successful!');
+            } catch (err) {
+                console.error('Login error:', err);
+                alert('Login failed. Make sure the backend is running.');
+            }
         });
     }
 
@@ -368,10 +398,37 @@ document.addEventListener('DOMContentLoaded', () => {
     if (registerForm) {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            // TODO: Wire this to POST /register in your backend
-            registerModal.style.display = 'none';
-            showLoginModal();
-            alert('Registration complete! Please log in now. (Remember to wire the API!)');
+            const userName = document.getElementById('regUsername').value.trim();
+            const userEmail_id = document.getElementById('regEmail').value.trim();
+            const userPassword = document.getElementById('regPassword').value;
+            const userPhoneNumber = document.getElementById('regPhone').value.trim();
+
+            try {
+                const res = await fetch('http://127.0.0.1:8000/api/resume/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userName,
+                        userEmail_id,
+                        userPassword,
+                        userPhoneNumber
+                    })
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json();
+                    alert(errData.detail || 'Registration failed.');
+                    return;
+                }
+
+                registerModal.style.display = 'none';
+                registerForm.reset();
+                showLoginModal();
+                alert('Registration complete! Please log in now.');
+            } catch (err) {
+                console.error('Register error:', err);
+                alert('Registration failed. Make sure the backend is running.');
+            }
         });
     }
 });

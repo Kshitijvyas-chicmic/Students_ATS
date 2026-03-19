@@ -1,4 +1,4 @@
-from sqlalchemy import Float, Column, Integer, String
+from sqlalchemy import Column, String
 from app.database.database import Base
 
 class UserDataDBModel(Base):

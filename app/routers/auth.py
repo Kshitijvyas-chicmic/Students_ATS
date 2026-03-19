@@ -30,7 +30,8 @@ def login(login_data: UserLogIn, response: Response, db: Session = Depends(get_d
         path="/"  # Make cookie available for all paths
     )
     return {
-        "message": "Login successfully"
+        "message": "Login successfully",
+        "access_token": token
     }
 
 
