@@ -6,3 +6,7 @@ uvicorn
 requests
 pydantic
 fitz
+email-validator
+sqlalchemy
+psycopg2
+python-jose[cryptography]

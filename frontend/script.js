@@ -142,13 +142,27 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('target_role', targetRole);
         formData.append('exp_level', expLevel);
 
+        const token = localStorage.getItem('token');
+        const headers = {};
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
         try {
             const response = await fetch('http://127.0.0.1:8000/api/resume/analyze', {
                 method: 'POST',
+                headers: headers,
                 body: formData
             });
 
-            if (!response.ok) throw new Error('Server error');
+            if (!response.ok) {
+                // Handle BOTH 401 Unauthorized and 403 Forbidden
+                if (response.status === 401 || response.status === 403) {
+                    showLoginModal();
+                    return;
+                }
+                throw new Error('Server error');
+            }
 
             const data = await response.json();
             displayResults(data, targetRole);
@@ -262,5 +276,102 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Scroll to results
         resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Modal Logic
+    const loginModal = document.getElementById('loginModal');
+    const closeLoginBtn = document.getElementById('closeLoginBtn');
+
+    function showLoginModal() {
+        if (loginModal) {
+            loginModal.style.display = 'flex';
+            interimJobs.hidden = true; // Hide interim jobs if login required
+        }
+    }
+
+    if (closeLoginBtn && loginModal) {
+        closeLoginBtn.addEventListener('click', () => {
+            loginModal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === loginModal) {
+                loginModal.style.display = 'none';
+            }
+        });
+    }
+
+    // -- AUTH UI WIRING --
+    const navLoginBtn = document.getElementById('navLoginBtn');
+    const navRegisterBtn = document.getElementById('navRegisterBtn');
+    const navLogoutBtn = document.getElementById('navLogoutBtn');
+    const registerModal = document.getElementById('registerModal');
+    const closeRegisterBtn = document.getElementById('closeRegisterBtn');
+
+    function checkAuthState() {
+        const token = localStorage.getItem('token');
+        if (token) {
+            navLoginBtn.style.display = 'none';
+            navRegisterBtn.style.display = 'none';
+            navLogoutBtn.style.display = 'block';
+        } else {
+            navLoginBtn.style.display = 'block';
+            navRegisterBtn.style.display = 'block';
+            navLogoutBtn.style.display = 'none';
+        }
+    }
+    checkAuthState(); // Check on load
+
+    if (navLoginBtn) navLoginBtn.addEventListener('click', showLoginModal);
+    
+    if (navLogoutBtn) {
+        navLogoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('token');
+            checkAuthState();
+            alert('Successfully logged out.');
+        });
+    }
+
+    if (navRegisterBtn && registerModal) {
+        navRegisterBtn.addEventListener('click', () => {
+            registerModal.style.display = 'flex';
+        });
+    }
+
+    if (closeRegisterBtn && registerModal) {
+        closeRegisterBtn.addEventListener('click', () => {
+            registerModal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === registerModal) {
+                registerModal.style.display = 'none';
+            }
+        });
+    }
+
+    // -- FORM SUBMISSIONS (Connect these to your backend) --
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            // TODO: Wire this to POST /login in your backend
+            // Example success behavior:
+            localStorage.setItem('token', 'simulated_dummy_jwt_token_for_now');
+            loginModal.style.display = 'none';
+            checkAuthState();
+            alert('Login successful! Check your browser localStorage for the token. (Remember to wire the API!)');
+        });
+    }
+
+    const registerForm = document.getElementById('registerForm');
+    if (registerForm) {
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            // TODO: Wire this to POST /register in your backend
+            registerModal.style.display = 'none';
+            showLoginModal();
+            alert('Registration complete! Please log in now. (Remember to wire the API!)');
+        });
     }
 });

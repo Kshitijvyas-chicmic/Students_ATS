@@ -75,7 +75,6 @@ Resume Text:
         parsed = json.loads(result)
 
         # Normalize skills
-        # Normalize skills
         parsed['skills'] = normalize_skills_list(parsed.get('skills', []))
 
         # Normalize project technologies and merge into skills

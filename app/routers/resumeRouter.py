@@ -1,8 +1,15 @@
-from fastapi import APIRouter, UploadFile, File, Form
+from fastapi import APIRouter, UploadFile, File, Form, Depends, Request, HTTPException,status
 from app.resume_parser import extract_text_from_pdf, parse_resume_features
 from app.scoring_engine import calculate_ats_score
 from app.llm_engine import get_llm_insights
 from app.core.level_skills_DB.fresher import ROLE_REQUIREMENTS
+from app.core.normalization import normalize_skills_list
+from app.schema.userData import UserData, TempUserData
+from app.service.userDataService import register_user
+from app.database.database import get_db
+from sqlalchemy.orm import Session
+from app.schema.userLogIn import UserLogIn
+from app.utils.jwt import get_current_user
 
 
 router = APIRouter(prefix='/api/resume', tags=['Resume'])
@@ -16,7 +23,12 @@ def get_roles():
     return sorted(roles)
 
 @router.post("/analyze")
-def analyze_resume(resume: UploadFile = File(...), target_role: str = Form(...),exp_level: str = Form(...)):
+def analyze_resume(request: Request, resume: UploadFile = File(...), target_role: str = Form(...),exp_level: str = Form(...),db: Session = Depends(get_db)):
+    current_user = get_current_user(request,db)
+    # and the type of current_user is UserDataDBModel
+    if current_user.userRole != 'user' and current_user.userRole != 'admin':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Login page popUP')
+    
     print(f"\n--- 🚀 Processing Request for Role: {target_role} ---")
     
     # 1. Extraction (Deterministic)
@@ -50,7 +62,6 @@ def analyze_resume(resume: UploadFile = File(...), target_role: str = Form(...),
     print(f"Semantic Bonus: {semantic_bonus} | Final Adjusted Score: {int(final_score)}%")
     
     # Merge skills (Static DB + LLM found extra)
-    from app.core.normalization import normalize_skills_list
     all_skills = normalize_skills_list(features["skills"]) # Already normalized but for safety
     extra_skills = insights.get("extra_skills", [])
     if isinstance(extra_skills, list):
@@ -79,3 +90,7 @@ def analyze_resume(resume: UploadFile = File(...), target_role: str = Form(...),
     
     print("--- ✅ Analysis complete ---")
     return final_result
+
+@router.post("/register")
+def register_user_route(tempUserData: TempUserData, db: Session = Depends(get_db)):
+    return register_user(tempUserData=tempUserData, db=db)
