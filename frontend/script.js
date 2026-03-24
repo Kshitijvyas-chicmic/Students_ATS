@@ -142,16 +142,10 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('target_role', targetRole);
         formData.append('exp_level', expLevel);
 
-        const token = localStorage.getItem('token');
-        const headers = {};
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
-
         try {
             const response = await fetch('http://127.0.0.1:8000/api/resume/analyze', {
                 method: 'POST',
-                headers: headers,
+                credentials: 'include',
                 body: formData
             });
 
@@ -308,32 +302,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const registerModal = document.getElementById('registerModal');
     const closeRegisterBtn = document.getElementById('closeRegisterBtn');
 
-    function checkAuthState() {
-        const token = localStorage.getItem('token');
-        if (token) {
-            navLoginBtn.style.display = 'none';
-            navRegisterBtn.style.display = 'none';
-            navLogoutBtn.style.display = 'block';
-        } else {
-            navLoginBtn.style.display = 'block';
-            navRegisterBtn.style.display = 'block';
-            navLogoutBtn.style.display = 'none';
+    async function checkAuthState() {
+        try {
+            const response = await fetch('http://127.0.0.1:8000/auth/me', {
+                method: 'GET',
+                credentials: 'include'
+            });
+            if (response.ok) {
+                navLoginBtn.style.display = 'none';
+                navRegisterBtn.style.display = 'none';
+                navLogoutBtn.style.display = 'block';
+                return true;
+            }
+        } catch (error) {
+            console.error('Auth check failed:', error);
         }
+        navLoginBtn.style.display = 'block';
+        navRegisterBtn.style.display = 'block';
+        navLogoutBtn.style.display = 'none';
+        return false;
     }
     checkAuthState(); // Check on load
 
     if (navLoginBtn) navLoginBtn.addEventListener('click', showLoginModal);
-    
+
     if (navLogoutBtn) {
         navLogoutBtn.addEventListener('click', async () => {
             try {
                 await fetch('http://127.0.0.1:8000/auth/logout', {
-                    method: 'POST'
+                    method: 'POST',
+                    credentials: 'include'
                 });
             } catch (e) {
                 console.error('Logout API error:', e);
             }
-            localStorage.removeItem('token');
             checkAuthState();
             alert('Successfully logged out.');
         });
@@ -369,6 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const res = await fetch('http://127.0.0.1:8000/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
                     body: JSON.stringify({
                         userEmail_id: email,
                         userPassword: password
@@ -381,11 +384,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                const data = await res.json();
-                localStorage.setItem('token', data.access_token);
                 loginModal.style.display = 'none';
                 loginForm.reset();
-                checkAuthState();
+                await checkAuthState();
                 alert('Login successful!');
             } catch (err) {
                 console.error('Login error:', err);
