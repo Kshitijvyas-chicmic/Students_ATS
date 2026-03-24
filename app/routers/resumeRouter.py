@@ -94,3 +94,11 @@ def analyze_resume(request: Request, resume: UploadFile = File(...), target_role
 @router.post("/register")
 def register_user_route(tempUserData: TempUserData, db: Session = Depends(get_db)):
     return register_user(tempUserData=tempUserData, db=db)
+
+@router.get("/generate_quiz")
+def generateQuiz(request:Request,db: Session = Depends(get_db)):
+    current_user = get_current_user(request,db)
+    # and the type of current_user is UserDataDBModel
+    if current_user.userRole != 'user' and current_user.userRole != 'admin':
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Login page popUP')
+    
