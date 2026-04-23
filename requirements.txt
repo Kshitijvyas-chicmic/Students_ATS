@@ -9,4 +9,6 @@ psycopg2
 python-jose[cryptography]
 python-dotenv
 alembic
-python-multipart
+python-multipart
+bcrypt
+
