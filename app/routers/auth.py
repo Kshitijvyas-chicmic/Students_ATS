@@ -5,6 +5,8 @@ from app.database.database import get_db
 from app.models.userDataDBModel import UserDataDBModel
 from app.utils.hashpassword import verify_password
 from app.utils.jwt import create_access_token, get_current_user
+from app.schema.userData import TempUserData
+from app.service.userDataService import register_user
 
 router = APIRouter(prefix="/auth")
 
@@ -46,3 +48,7 @@ def get_me(request: Request, db: Session = Depends(get_db)):
 def logout(response: Response):
     response.delete_cookie(key="access_token")
     return {"message":"Logout successfully"}
+
+@router.post("/register")
+def register_user_route(tempUserData: TempUserData, db: Session = Depends(get_db)):
+    return register_user(tempUserData=tempUserData, db=db)

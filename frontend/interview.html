@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Mock Interview | ATS Space</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        .quiz-page {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+        .progress-bar {
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+        .progress-inner {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .question-meta {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="glass-bg"></div>
+    <div class="container quiz-page">
+        <header>
+            <h1 class="glow-text">AI Mock Interview</h1>
+            <p class="subtitle" id="roleDisplay">Preparing your session...</p>
+        </header>
+
+        <div class="progress-bar">
+            <div id="progressInner" class="progress-inner"></div>
+        </div>
+
+        <div id="loaderSection" class="card" style="text-align: center; padding: 60px;">
+            <div class="loader" style="margin: 0 auto 20px; width: 40px; height: 40px;"></div>
+            <h3>Generating your questions...</h3>
+            <p class="file-hint">This usually takes about 30-60 seconds.</p>
+        </div>
+
+        <div id="quizSection" hidden>
+            <div id="questionContainer">
+                <!-- Single question shown at a time or list -->
+            </div>
+            <button id="submitBtn" class="btn-primary" style="margin-top: 30px;">Submit Final Answers</button>
+        </div>
+
+        <div id="resultSection" class="card result-container" hidden>
+            <div class="score-summary">
+                <h2 style="color: var(--primary);">Assessment Complete!</h2>
+                <div class="big-score" id="finalScore">0%</div>
+                <p id="resultMsg">Your response has been submitted and stored in our database.</p>
+                <button onclick="window.location.href='index.html'" class="nav-btn" style="margin-top: 30px; border-color: var(--primary);">Back to Dashboard</button>
+            </div>
+        </div>
+    </div>
+    <script src="interview_script.js"></script>
+</body>
+</html>

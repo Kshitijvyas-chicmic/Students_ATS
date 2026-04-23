@@ -2,7 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers.resumeRouter import router as resumeRouter
 from app.routers.auth import router as loginRouter
+from app.routers.interviewRouter import router as interviewRouter
 from app.database.database import Base, engine
+from fastapi.staticfiles import StaticFiles
+import os
 
 from app.models.userDataDBModel import UserDataDBModel # Import models so table schemas are registered
 from app.models.interviewDataDBModel import InterviewDataDBModel
@@ -26,3 +29,8 @@ app.add_middleware(
 
 app.include_router(resumeRouter)
 app.include_router(loginRouter)
+app.include_router(interviewRouter)
+
+# Serve static files from the 'frontend' directory
+frontend_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "frontend")
+app.mount("/", StaticFiles(directory=frontend_path, html=True), name="frontend")

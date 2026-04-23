@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fetch and populate available roles
     async function loadRoles() {
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/resume/roles');
+            const response = await fetch('/api/resume/roles');
             if (response.ok) {
                 const roles = await response.json();
                 roles.forEach(role => {
@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
         formData.append('exp_level', expLevel);
 
         try {
-            const response = await fetch('http://127.0.0.1:8000/api/resume/analyze', {
+            const response = await fetch('/api/resume/analyze', {
                 method: 'POST',
                 credentials: 'include',
                 body: formData
@@ -304,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function checkAuthState() {
         try {
-            const response = await fetch('http://127.0.0.1:8000/auth/me', {
+            const response = await fetch('/auth/me', {
                 method: 'GET',
                 credentials: 'include'
             });
@@ -329,7 +329,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (navLogoutBtn) {
         navLogoutBtn.addEventListener('click', async () => {
             try {
-                await fetch('http://127.0.0.1:8000/auth/logout', {
+                await fetch('/auth/logout', {
                     method: 'POST',
                     credentials: 'include'
                 });
@@ -368,7 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const password = document.getElementById('loginPassword').value;
 
             try {
-                const res = await fetch('http://127.0.0.1:8000/auth/login', {
+                const res = await fetch('/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
@@ -405,7 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const userPhoneNumber = document.getElementById('regPhone').value.trim();
 
             try {
-                const res = await fetch('http://127.0.0.1:8000/api/resume/register', {
+                const res = await fetch('/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -430,6 +430,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error('Register error:', err);
                 alert('Registration failed. Make sure the backend is running.');
             }
+        });
+    }
+
+    // --- INTERVIEW LOGIC ---
+    const startInterviewBtn = document.getElementById('startInterviewBtn');
+
+    if (startInterviewBtn) {
+        startInterviewBtn.addEventListener('click', async () => {
+            // 1. Auth Check FIRST
+            const isLoggedIn = await checkAuthState();
+            if (!isLoggedIn) {
+                showLoginModal();
+                return;
+            }
+
+            const role = targetRoleInput.value;
+            if (!role) {
+                alert("Please select a target role first!");
+                return;
+            }
+
+            // Open in new tab
+            window.open(`interview.html?role=${encodeURIComponent(role)}`, '_blank');
         });
     }
 });

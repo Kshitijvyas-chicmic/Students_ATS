@@ -4,11 +4,8 @@ from app.scoring_engine import calculate_ats_score
 from app.llm_engine import get_llm_insights
 from app.core.level_skills_DB.fresher import ROLE_REQUIREMENTS
 from app.core.normalization import normalize_skills_list
-from app.schema.userData import UserData, TempUserData
-from app.service.userDataService import register_user
 from app.database.database import get_db
 from sqlalchemy.orm import Session
-from app.schema.userLogIn import UserLogIn
 from app.utils.jwt import get_current_user
 
 
@@ -90,15 +87,4 @@ def analyze_resume(request: Request, resume: UploadFile = File(...), target_role
     
     print("--- ✅ Analysis complete ---")
     return final_result
-
-@router.post("/register")
-def register_user_route(tempUserData: TempUserData, db: Session = Depends(get_db)):
-    return register_user(tempUserData=tempUserData, db=db)
-
-@router.get("/generate_quiz")
-def generateQuiz(request:Request,db: Session = Depends(get_db)):
-    current_user = get_current_user(request,db)
-    # and the type of current_user is UserDataDBModel
-    if current_user.userRole != 'user' and current_user.userRole != 'admin':
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail='Login page popUP')
     

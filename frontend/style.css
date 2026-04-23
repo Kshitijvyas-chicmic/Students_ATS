@@ -602,3 +602,12 @@ footer {
 .close-btn:hover {
     color: white;
 }
+
+/* --- INTERVIEW FEATURE STYLES --- */
+.interview-card { margin-top: 30px; }
+.question-card { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+.question-card h4 { margin-top: 0; margin-bottom: 15px; font-size: 1.1rem; color: var(--text-main); }
+.options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.option-btn { padding: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; color: #94a3b8; cursor: pointer; text-align: left; transition: all 0.2s ease; font-family: inherit; }
+.option-btn:hover, .option-btn.selected { background: rgba(99, 102, 241, 0.2); border-color: var(--primary); color: #a5b4fc; }
+.big-score { font-size: 3.5rem; text-align: center; font-weight: 800; color: var(--primary); margin: 20px 0; }
