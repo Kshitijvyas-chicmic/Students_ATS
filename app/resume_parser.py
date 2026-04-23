@@ -1,14 +1,14 @@
 import requests
 import json
+import os
+from dotenv import load_dotenv
 from app.core.normalization import normalize_skills_list
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
-MODEL_NAME = "llama3.2:latest"  # change if using other models
+load_dotenv()
 
-
-def normalize_text(text: str) -> str:
-    """Normalize text safely: lowercase, strip, collapse spaces."""
-    return re.sub(r"\s+", " ", text.lower().strip())
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+GROQ_MODEL = "llama-3.3-70b-versatile"
 
 
 def extract_text_from_pdf(file_bytes):
@@ -22,7 +22,10 @@ def extract_text_from_pdf(file_bytes):
 
 
 def parse_resume_features(text: str):
-    """Extract skills, projects, experience from resume and normalize everything."""
+    """Extract skills, projects, experience from resume using Groq API."""
+    if not GROQ_API_KEY:
+        raise Exception("GROQ_API_KEY is not set in environment variables.")
+
     prompt = f"""
 You are an ATS resume parser.
 
@@ -52,27 +55,28 @@ Resume Text:
 \"\"\"{text}\"\"\"
 """
 
+    headers = {
+        "Authorization": f"Bearer {GROQ_API_KEY}",
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "model": GROQ_MODEL,
+        "messages": [{"role": "user", "content": prompt}],
+        "response_format": {"type": "json_object"},
+        "temperature": 0.1
+    }
+
     try:
-        response = requests.post(
-            OLLAMA_URL,
-            json={
-                "model": MODEL_NAME,
-                "prompt": prompt,
-                "format": "json",
-                "stream": False
-            },
-            timeout=180
-        )
+        response = requests.post(GROQ_URL, headers=headers, json=payload, timeout=60)
 
         if response.status_code != 200:
-            raise Exception(f"Ollama error: {response.text}")
+            raise Exception(f"Groq API error {response.status_code}: {response.text}")
 
-        data = response.json()
-        result = data.get("response", "")
-        if not result:
-            raise Exception(f"Unexpected Ollama response: {data}")
+        raw = response.json().get("choices", [{}])[0].get("message", {}).get("content", "")
+        if not raw:
+            raise Exception(f"Groq returned empty response: {response.json()}")
 
-        parsed = json.loads(result)
+        parsed = json.loads(raw)
 
         # Normalize skills
         parsed['skills'] = normalize_skills_list(parsed.get('skills', []))
@@ -90,13 +94,11 @@ Resume Text:
 
     except json.JSONDecodeError:
         import re
-        json_match = re.search(r"\{.*\}", result, re.DOTALL)
+        json_match = re.search(r"\{.*\}", raw, re.DOTALL)
         if json_match:
             return json.loads(json_match.group())
         else:
-            raise ValueError("Invalid JSON returned from Ollama")
+            raise ValueError("Invalid JSON returned from Groq")
 
-    except requests.exceptions.ConnectionError:
-        raise Exception("Ollama server is not running. Please start Ollama on your machine (http://localhost:11434).")
     except Exception as e:
-        raise Exception(f"Resume parsing failed: {str(e)}")
+        raise Exception(f"Resume parsing failed: {str(e)}")

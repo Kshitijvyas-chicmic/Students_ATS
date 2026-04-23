@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (!res.ok) throw new Error("Submission failed");
 
                 const data = await res.json();
-                
+
                 // Show result screen
                 quizSection.hidden = true;
                 resultSection.hidden = false;

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,6 +13,7 @@
             margin: 40px auto;
             padding: 20px;
         }
+
         .progress-bar {
             height: 8px;
             background: rgba(255, 255, 255, 0.1);
@@ -19,12 +21,14 @@
             margin: 20px 0;
             overflow: hidden;
         }
+
         .progress-inner {
             height: 100%;
             background: var(--primary);
             width: 0%;
             transition: width 0.3s ease;
         }
+
         .question-meta {
             color: var(--text-dim);
             font-size: 0.9rem;
@@ -32,6 +36,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="glass-bg"></div>
     <div class="container quiz-page">
@@ -62,10 +67,12 @@
                 <h2 style="color: var(--primary);">Assessment Complete!</h2>
                 <div class="big-score" id="finalScore">0%</div>
                 <p id="resultMsg">Your response has been submitted and stored in our database.</p>
-                <button onclick="window.location.href='index.html'" class="nav-btn" style="margin-top: 30px; border-color: var(--primary);">Back to Dashboard</button>
+                <button onclick="window.location.href='index.html'" class="nav-btn"
+                    style="margin-top: 30px; border-color: var(--primary);">Back to Dashboard</button>
             </div>
         </div>
     </div>
     <script src="interview_script.js"></script>
 </body>
+
 </html>
