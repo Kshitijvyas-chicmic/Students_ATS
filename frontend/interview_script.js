@@ -108,7 +108,43 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // Show result screen
                 quizSection.hidden = true;
                 resultSection.hidden = false;
-                finalScore.textContent = `${data.score}%`;
+                
+                // Show score out of 10
+                finalScore.textContent = `${data.score_out_of_10} / 10`;
+                
+                const reviewBtn = document.getElementById('reviewBtn');
+                const reviewContainer = document.getElementById('reviewContainer');
+                const reviewList = document.getElementById('reviewList');
+
+                reviewBtn.addEventListener('click', () => {
+                    reviewContainer.hidden = !reviewContainer.hidden;
+                    reviewBtn.textContent = reviewContainer.hidden ? "Review Answers" : "Hide Review";
+                    
+                    if (!reviewContainer.hidden) {
+                        renderReview(data.breakdown);
+                    }
+                });
+
+                function renderReview(breakdown) {
+                    reviewList.innerHTML = '';
+                    breakdown.forEach((item, index) => {
+                        const div = document.createElement('div');
+                        div.className = `card review-card ${item.is_correct ? 'correct-border' : 'wrong-border'}`;
+                        div.style.marginBottom = '15px';
+                        div.style.padding = '15px';
+                        div.style.borderLeft = `4px solid ${item.is_correct ? '#4ade80' : '#f87171'}`;
+                        
+                        div.innerHTML = `
+                            <p style="font-weight: 600; margin-bottom: 8px;">Q${index + 1}: ${item.question}</p>
+                            <p style="font-size: 0.9rem; color: ${item.is_correct ? '#4ade80' : '#f87171'}">
+                                Your Answer: ${item.user_answer || 'Not answered'} 
+                                ${item.is_correct ? '✓' : '✗'}
+                            </p>
+                            ${!item.is_correct ? `<p style="font-size: 0.9rem; color: #4ade80">Correct Answer: ${item.correct_answer}</p>` : ''}
+                        `;
+                        reviewList.appendChild(div);
+                    });
+                }
             } catch (err) {
                 console.error(err);
                 const errorDetail = err.message || "Unknown error";

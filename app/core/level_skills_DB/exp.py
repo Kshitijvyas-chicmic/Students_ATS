@@ -168,5 +168,25 @@ ROLE_REQUIREMENTS = {
             "python": 10,
             "ci/cd": 5
         }
+    },
+
+    "php developer": {
+        "min_exp": 3,
+        "skills": {
+            "php": 15, "laravel": 15, "mysql": 10,
+            "system-design": 15, "performance-optimization": 15,
+            "microservices": 10, "security-best-practices": 10,
+            "ci/cd": 5, "docker": 5
+        }
+    },
+
+    "node js developer": {
+        "min_exp": 3,
+        "skills": {
+            "node.js": 15, "javascript": 10, "express.js": 10,
+            "system-design": 18, "performance-optimization": 15,
+            "microservices": 15, "cloud-architecture": 7,
+            "redis": 5, "docker": 5
+        }
     }
 }

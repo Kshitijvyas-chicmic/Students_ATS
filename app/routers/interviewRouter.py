@@ -88,8 +88,20 @@ def submit_interview(payload: InterviewSubmitRequest, request: Request, db: Sess
         print(f"❌ Database Error during interview submission: {e}")
         raise HTTPException(status_code=500, detail="Could not save result to database")
     
-    # Clean up memory
-    if payload.interview_id in interview_cache:
-        del interview_cache[payload.interview_id]
-    
-    return {"score": final_score}
+    # Prepare detailed results for review
+    review_data = []
+    for i, q in enumerate(correct_questions):
+        review_data.append({
+            "question": q["question_name"],
+            "options": q["options"],
+            "correct_answer": q["correct_answer"],
+            "user_answer": payload.user_answers[i] if i < len(payload.user_answers) else None,
+            "is_correct": i < len(payload.user_answers) and payload.user_answers[i] == q["correct_answer"]
+        })
+
+    return {
+        "score_out_of_10": round((score / total) * 10, 1) if total > 0 else 0,
+        "total_questions": total,
+        "correct_count": score,
+        "breakdown": review_data
+    }

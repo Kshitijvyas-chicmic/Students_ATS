@@ -34,7 +34,7 @@ def analyze_resume(request: Request, resume: UploadFile = File(...), target_role
 
     text = extract_text_from_pdf(file_bytes) # text extract from pdf
     print(text)
-    text = text[:4000]
+    text = text[:12000]
 
     features = parse_resume_features(text) 
     # type of the features is dict with keys: skills, projects, experience_years

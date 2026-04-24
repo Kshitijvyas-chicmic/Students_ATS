@@ -48,7 +48,7 @@ def normalize_semantic_score(value):
 
 def get_llm_insights(resume_text: str, target_role: str, deterministic_results: dict):
 
-    truncated_resume = resume_text[:2500]
+    truncated_resume = resume_text[:12000]
 
     prompt = f"""
     Analyze this resume for the role "{target_role}".

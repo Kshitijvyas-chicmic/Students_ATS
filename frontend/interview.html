@@ -69,6 +69,12 @@
                 <p id="resultMsg">Your response has been submitted and stored in our database.</p>
                 <button onclick="window.location.href='index.html'" class="nav-btn"
                     style="margin-top: 30px; border-color: var(--primary);">Back to Dashboard</button>
+                <button id="reviewBtn" class="btn-primary" style="margin-top: 20px; background: transparent; border: 1px solid var(--primary); color: var(--primary);">Review Answers</button>
+            </div>
+            
+            <div id="reviewContainer" style="margin-top: 40px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px;" hidden>
+                <h3>Question Review</h3>
+                <div id="reviewList"></div>
             </div>
         </div>
     </div>

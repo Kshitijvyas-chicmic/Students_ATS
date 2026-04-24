@@ -159,5 +159,23 @@ ROLE_REQUIREMENTS = {
         "ci/cd": 7,
         "git/github": 8
         }
+    },
+
+    "php developer": {
+        "min_exp": 1,
+        "skills": {
+            "php": 20, "laravel": 18, "mysql": 12,
+            "javascript": 10, "html": 10, "css": 10,
+            "git/github": 10, "rest-api": 10
+        }
+    },
+
+    "node js developer": {
+        "min_exp": 1,
+        "skills": {
+            "javascript": 15, "node.js": 20, "express.js": 15,
+            "mongodb": 12, "rest-api": 12, "jwt": 10,
+            "typescript": 8, "docker": 8
+        }
     }
 }

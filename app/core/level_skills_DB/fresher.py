@@ -133,6 +133,23 @@ ROLE_REQUIREMENTS = {
         "aws": 10,
         "node.js": 10
         }
+    },
+
+    "php developer": {
+        "min_exp": 0,
+        "skills": {
+            "php": 25, "laravel": 20, "mysql": 15,
+            "javascript": 10, "html": 10, "css": 10,
+            "git/github": 10
+        }
+    },
+
+    "node js developer": {
+        "min_exp": 0,
+        "skills": {
+            "javascript": 20, "node.js": 25, "express.js": 15,
+            "mongodb": 15, "rest-api": 15, "jwt": 10
+        }
     }
 
 }
