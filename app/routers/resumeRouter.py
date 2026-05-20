@@ -38,6 +38,7 @@ def analyze_resume(request: Request, resume: UploadFile = File(...), target_role
 
     features = parse_resume_features(text) 
     # type of the features is dict with keys: skills, projects, experience_years
+    # and you get everything in normalize form like: everything in lowercase and no extra space
     print("Detected Skills:", features["skills"])
     print("Detected Projects:", features["projects"])
     print("Detected Experience:", features["experience_years"], "years")
@@ -75,7 +76,7 @@ def analyze_resume(request: Request, resume: UploadFile = File(...), target_role
         "score_breakdown": det_results["breakdown"], # Include the Quantity vs Quality split
         "analysis": insights,
         "job_links": {
-            "linkedin_24h": f"https://www.linkedin.com/jobs/search/?keywords={target_role.replace(' ', '+')}&f_TPR=r3600",
+            "linkedin_24h": f"https://www.linkedin.com/jobs/search/?keywords={target_role.replace(' ', '+')}&f_TPR=r86400",
             "indeed_24h": f"https://www.indeed.com/jobs?q={target_role.replace(' ', '+')}&fromage=1",
             "naukri": f"https://www.naukri.com/{target_role.replace(' ', '-')}-jobs?freshness=1"
         },

@@ -61,7 +61,7 @@ ROLE_REQUIREMENTS = {
         "min_exp": 3,
         "skills": {
             "python": 15,
-            "fastapi": 10,
+            "fast-api": 10,
             "django": 10,
             "system-design": 15,
             "microservices": 15,

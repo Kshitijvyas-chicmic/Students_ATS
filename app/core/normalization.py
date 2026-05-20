@@ -29,6 +29,8 @@ SKILL_ALIASES = {
     "angularjs": "angular",
     "react.js": "react",
     "node.js": "node.js",
+    "fastapi": "fast-api",
+    "fast-api": "fast-api",
 
     # Databases
     "postgres": "postgresql",
